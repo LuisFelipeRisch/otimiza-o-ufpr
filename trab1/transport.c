@@ -4,11 +4,10 @@
 
 int main(){
   PROBLEM_STRUCT *problem = initProblem();
-
-  printProblem(problem);
-  printf("\n\n-- LP --\n\n");
-  printProblemAsLP(problem);
+  if(problem)
+    printProblemAsLP(problem);
 
   freeProblemStruct(problem);
+
   return 0;
 }

@@ -17,9 +17,7 @@ typedef struct
 } PROBLEM_STRUCT;
 
 PROBLEM_STRUCT *initProblem();
-void printProblem(PROBLEM_STRUCT *problem);
 void printProblemAsLP(PROBLEM_STRUCT *problem);
 void freeProblemStruct(PROBLEM_STRUCT *problem);
-
 
 #endif
