@@ -2,7 +2,7 @@
     CFLAGS =
     LFLAGS = -lm
 
-      PROG = transport
+      PROG = transporte
       OBJS = ./$(PROG).o \
              ./memHandler.o \
              ./problem.o \
