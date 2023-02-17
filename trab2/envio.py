@@ -35,6 +35,9 @@ def bin_packing(weights:List[int], MAX_CAPACITY:int, constrains: List[Tuple[int,
                                     constraints_satisfied = False
                                     break
 
+                            if not constraints_satisfied:
+                                continue
+
                             current_weight = 0
                             for item in trip:
                                 current_weight += weights[item]
