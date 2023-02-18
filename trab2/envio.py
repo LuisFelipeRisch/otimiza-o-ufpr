@@ -4,16 +4,27 @@ import sys
 import math
 import re
 import copy
+import time
 
+total_nodes = 0
 best_trips_qnt = math.inf
 best_trips_arrangement = None
 
+def bin_packing(weights:List[int], MAX_CAPACITY:int, constrains: List[Tuple[int, int]], should_use_teachers_bound:bool, should_turn_off_feasibility_cuts:bool, should_turn_off_optimally_cuts:bool) -> None:
+    global best_trips_arrangement, best_trips_qnt, total_nodes
 
-def bin_packing(weights:List[int], MAX_CAPACITY:int, constrains: List[Tuple[int, int]]) -> None:
-    global best_trips_arrangement, best_trips_qnt
+    def my_bound(trips:List[List[int]]) -> float:
+        # print("My bound")
+        return -math.inf
+
+    def teachers_bound(trips:List[List[int]]) -> float:
+        # print("Teachers bound")
+        return max(len(trips), sum(weights) / MAX_CAPACITY)
 
     def branch_and_bound(start:bool, available_items:List[int], trips:List[List[int]]) -> None:
-        global best_trips_arrangement, best_trips_qnt
+        global best_trips_arrangement, best_trips_qnt, total_nodes
+        total_nodes += 1
+
         if start:
             for item in available_items:
                 branch_and_bound(False, [x for x in available_items if x != item], [[item]])
@@ -51,9 +62,16 @@ def bin_packing(weights:List[int], MAX_CAPACITY:int, constrains: List[Tuple[int,
                     if not found:
                         trips_copied.append([current_item])
 
+                    if not should_turn_off_optimally_cuts:
+                        if should_use_teachers_bound:
+                            if teachers_bound(trips) >= best_trips_qnt:
+                                return
+                        else:
+                            if my_bound(trips) >= best_trips_qnt:
+                                return
+
                     branch_and_bound(False, [x for x in available_items if x != current_item], trips_copied)
 
-    weights = sorted(weights, reverse=True)
     branch_and_bound(True, [*range(len(weights))], [[]])
     print(best_trips_qnt)
     print(best_trips_arrangement)
@@ -118,10 +136,14 @@ def bin_packing(weights:List[int], MAX_CAPACITY:int, constrains: List[Tuple[int,
 
 argument_parser = ArgumentParser()
 argument_parser.add_argument("-f", help="With the -f option on the command line it must turn off the feasibility cuts", action="store_true", default=False)
-argument_parser.add_argument("-o", help="With the -f option on the command line it must turn off the optimally cuts", action="store_true", default=False)
+argument_parser.add_argument("-o", help="With the -o option on the command line it must turn off the optimally cuts", action="store_true", default=False)
 argument_parser.add_argument("-a", help="with the -a option on the command line it must use the given limiting function by teacher", action="store_true", default=False)
 
 args = argument_parser.parse_args()
+
+should_turn_off_feasibility_cuts = args.f
+should_turn_off_optimally_cuts = args.o
+should_use_teachers_bound = args.a
 
 restrictions = []
 items_weight = None
@@ -144,6 +166,9 @@ print(problem_params)
 print(items_weight)
 print(restrictions)
 
-bin_packing(items_weight, problem_params[2], [tuple(x) for x in restrictions])
+start_time = time.perf_counter()
+bin_packing(items_weight, problem_params[2], [tuple(x) for x in restrictions], should_use_teachers_bound, should_turn_off_feasibility_cuts, should_turn_off_optimally_cuts)
+end_time = time.perf_counter()
 
+print(f"The branch and bound algorithm took {end_time - start_time:0.4f} seconds and generated {total_nodes} nodes")
 # print(current_sol)
