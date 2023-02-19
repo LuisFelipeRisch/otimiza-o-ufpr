@@ -32,7 +32,6 @@ def print_log(problem_params:List[int], item_weights:List[int], restrictions:Lis
     sys.stderr.write(f'O branch and bound levou {total_time_sec:0.4f} segundos para ser executado e a árvore gerada teve um total de {total_nodes} nodos\n')
 
 def bin_packing(weights:List[int], MAX_CAPACITY:int, constrains: List[Tuple[int, int]], should_use_teachers_bound:bool, should_turn_off_feasibility_cuts:bool, should_turn_off_optimally_cuts:bool) -> None:
-
     # In order to active it, just do not pass the argument -a when executing program
     def my_bound(trips:List[List[int]]) -> float:
         for trip in trips:
@@ -43,6 +42,16 @@ def bin_packing(weights:List[int], MAX_CAPACITY:int, constrains: List[Tuple[int,
     # In order to active it, just pass the argument -a when executing program
     def teachers_bound(trips:List[List[int]]) -> float:
         return max(len(trips), sum(weights) / MAX_CAPACITY) >= best_trips_qnt
+
+    def should_prune(trips:List[List[int]]) -> bool:
+        if not should_turn_off_optimally_cuts:
+            if should_use_teachers_bound:
+                if teachers_bound(trips):
+                    return True
+            else:
+                if my_bound(trips):
+                    return True
+        return False
 
     def branch_and_bound(start:bool, available_items:List[int], trips:List[List[int]]) -> None:
         global best_trips_arrangement, best_trips_qnt, total_nodes
@@ -85,13 +94,8 @@ def bin_packing(weights:List[int], MAX_CAPACITY:int, constrains: List[Tuple[int,
                     if not found:
                         trips_copied.append([current_item])
 
-                    if not should_turn_off_optimally_cuts:
-                        if should_use_teachers_bound:
-                            if teachers_bound(trips_copied):
-                                continue
-                        else:
-                            if my_bound(trips_copied):
-                                continue
+                    if should_prune(trips_copied):
+                        continue
 
                     branch_and_bound(False, [x for x in available_items if x != current_item], trips_copied)
 
