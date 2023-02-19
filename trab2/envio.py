@@ -10,16 +10,39 @@ total_nodes = 0
 best_trips_qnt = math.inf
 best_trips_arrangement = None
 
+def print_result(n):
+    for item in range(n):
+        for index, trip in enumerate(best_trips_arrangement):
+            if item in trip:
+                sys.stdout.write(f'{index + 1}')
+                break
+        if item != n - 1:
+            sys.stdout.write(" ")
+    sys.stdout.write(f'\n{best_trips_qnt}')
+
+def print_log(problem_params:List[int], item_weights:List[int], restrictions:List[int], total_time_sec:float):
+    sys.stderr.write(f'n = {problem_params[0]}; p = {problem_params[1]}; c = {problem_params[2]}\n')
+
+    for item in range(len(item_weights)):
+        sys.stderr.write(f'O item {item + 1} tem a massa de {item_weights[item]}\n')
+
+    for restriction in restrictions:
+        sys.stderr.write(f'O item {restriction[0]} não pode viajar junto com o {restriction[1]}\n')
+
+    sys.stderr.write(f'O branch and bound levou {total_time_sec:0.4f} segundos para ser executado e a árvore gerada teve um total de {total_nodes} nodos\n')
+
 def bin_packing(weights:List[int], MAX_CAPACITY:int, constrains: List[Tuple[int, int]], should_use_teachers_bound:bool, should_turn_off_feasibility_cuts:bool, should_turn_off_optimally_cuts:bool) -> None:
-    global best_trips_arrangement, best_trips_qnt, total_nodes
 
+    # In order to active it, just do not pass the argument -a when executing program
     def my_bound(trips:List[List[int]]) -> float:
-        # print("My bound")
-        return -math.inf
+        for trip in trips:
+            if trip != sorted(trip):
+                return True
+        return False
 
+    # In order to active it, just pass the argument -a when executing program
     def teachers_bound(trips:List[List[int]]) -> float:
-        # print("Teachers bound")
-        return max(len(trips), sum(weights) / MAX_CAPACITY)
+        return max(len(trips), sum(weights) / MAX_CAPACITY) >= best_trips_qnt
 
     def branch_and_bound(start:bool, available_items:List[int], trips:List[List[int]]) -> None:
         global best_trips_arrangement, best_trips_qnt, total_nodes
@@ -64,75 +87,15 @@ def bin_packing(weights:List[int], MAX_CAPACITY:int, constrains: List[Tuple[int,
 
                     if not should_turn_off_optimally_cuts:
                         if should_use_teachers_bound:
-                            if teachers_bound(trips) >= best_trips_qnt:
-                                return
+                            if teachers_bound(trips_copied):
+                                continue
                         else:
-                            if my_bound(trips) >= best_trips_qnt:
-                                return
+                            if my_bound(trips_copied):
+                                continue
 
                     branch_and_bound(False, [x for x in available_items if x != current_item], trips_copied)
 
     branch_and_bound(True, [*range(len(weights))], [[]])
-    print(best_trips_qnt)
-    print(best_trips_arrangement)
-
-
-# def bin_packing(n: int, items: List[Tuple[int, int]], C: int, constraints: List[Tuple[int, int]]) -> List[List[int]]:
-#     def bound(level: int, trips: List[List[int]]) -> int:
-#         # calculate the remaining weight that can be packed in trips
-#         remaining = C
-#         for trip in trips:
-#             remaining -= sum([items[item][1] for item in trip])
-#         # add items to trips to get the maximum number of trips required
-#         level = len(trips[-1]) if trips else 0
-#         while level < n and items[level][1] <= remaining:
-#             remaining -= items[level][1]
-#             level += 1
-#         return len(trips) + (n - level + len(trips) - 1) // len(trips) + 1
-
-#     def backtrack(level: int, trips: List[List[int]]) -> bool:
-#         for trip in trips:
-#             weight = 0
-#             for item in trip:
-#                 for item_index, item_weight in items:
-#                     if item_index == item:
-#                         weight += item_weight
-#             if weight > C:
-#                 return False
-
-#         if level == n:
-#             # if all items have been packed, return True
-#             return True
-#         item = items[level][0]
-#         # try packing the current item in each trip
-#         for trip in trips:
-#             if item not in trip:
-#                 # check if the constraints are satisfied
-#                 constraints_satisfied = True
-#                 for (a, b) in constraints:
-#                     if (a in trip and b == item) or (b in trip and a == item):
-#                         constraints_satisfied = False
-#                         break
-#                 if constraints_satisfied:
-#                     trip.append(item)
-#                     if backtrack(level + 1, trips):
-#                         return True
-#                     trip.pop()
-#         # create a new trip if the current item cannot be packed in any existing trip
-#         trips.append([item])
-#         if backtrack(level + 1, trips):
-#             return True
-
-#     items = sorted(items, key=lambda x: x[1], reverse=True)
-#     trips = []
-
-#     print(problem_params)
-#     print(items)
-#     print(constraints)
-
-#     backtrack(0, trips)
-#     return trips
-
 
 argument_parser = ArgumentParser()
 argument_parser.add_argument("-f", help="With the -f option on the command line it must turn off the feasibility cuts", action="store_true", default=False)
@@ -162,13 +125,9 @@ for line in sys.stdin:
     else:
         restrictions.append([x - 1 for x in splitted_line])
 
-print(problem_params)
-print(items_weight)
-print(restrictions)
-
 start_time = time.perf_counter()
 bin_packing(items_weight, problem_params[2], [tuple(x) for x in restrictions], should_use_teachers_bound, should_turn_off_feasibility_cuts, should_turn_off_optimally_cuts)
 end_time = time.perf_counter()
 
-print(f"The branch and bound algorithm took {end_time - start_time:0.4f} seconds and generated {total_nodes} nodes")
-# print(current_sol)
+print_result(len(items_weight))
+print_log(problem_params, items_weight, restrictions, end_time - start_time)
