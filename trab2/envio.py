@@ -62,34 +62,60 @@ def bin_packing(weights:List[int], MAX_CAPACITY:int, constrains: List[Tuple[int,
                 branch_and_bound(False, [x for x in available_items if x != item], [[item]])
         else:
             if len(available_items) == 0:
-                if len(trips) < best_trips_qnt:
-                    best_trips_qnt = len(trips)
-                    best_trips_arrangement = copy.deepcopy(trips)
+                if should_turn_off_feasibility_cuts:
+                    is_feasible = True
+
+                    for trip in trips:
+                        current_weight = 0
+                        for item in trip:
+                            current_weight += weights[item]
+
+                        if current_weight > MAX_CAPACITY:
+                            is_feasible = False
+                            break
+
+                        for (a, b) in constrains:
+                            if a in trip and b in trip:
+                                is_feasible = False
+                                break
+
+                    if is_feasible:
+                        best_trips_qnt = len(trips)
+                        best_trips_arrangement = copy.deepcopy(trips)
+                else:
+                    if len(trips) < best_trips_qnt:
+                        best_trips_qnt = len(trips)
+                        best_trips_arrangement = copy.deepcopy(trips)
             else:
                 for current_item in available_items:
                     found = False
                     trips_copied = copy.deepcopy(trips)
 
                     for trip in trips_copied:
-                        if current_item not in trip:
-                            constraints_satisfied = True
-                            for (a, b) in constrains:
-                                if (a in trip and b == current_item) or (b in trip and a == current_item):
-                                    constraints_satisfied = False
+                        if should_turn_off_feasibility_cuts:
+                            trip.append(current_item)
+                            found = True
+                            break
+                        else:
+                            if current_item not in trip:
+                                constraints_satisfied = True
+                                for (a, b) in constrains:
+                                    if (a in trip and b == current_item) or (b in trip and a == current_item):
+                                        constraints_satisfied = False
+                                        break
+
+                                if not constraints_satisfied:
+                                    continue
+
+                                current_weight = 0
+                                for item in trip:
+                                    current_weight += weights[item]
+                                current_weight += weights[current_item]
+
+                                if constraints_satisfied and current_weight <= MAX_CAPACITY:
+                                    trip.append(current_item)
+                                    found = True
                                     break
-
-                            if not constraints_satisfied:
-                                continue
-
-                            current_weight = 0
-                            for item in trip:
-                                current_weight += weights[item]
-                            current_weight += weights[current_item]
-
-                            if constraints_satisfied and current_weight <= MAX_CAPACITY:
-                                trip.append(current_item)
-                                found = True
-                                break
 
                     if not found:
                         trips_copied.append([current_item])
@@ -133,5 +159,8 @@ start_time = time.perf_counter()
 bin_packing(items_weight, problem_params[2], [tuple(x) for x in restrictions], should_use_teachers_bound, should_turn_off_feasibility_cuts, should_turn_off_optimally_cuts)
 end_time = time.perf_counter()
 
-print_result(len(items_weight))
-print_log(problem_params, items_weight, restrictions, end_time - start_time)
+print(best_trips_qnt)
+print(best_trips_arrangement)
+
+# print_result(len(items_weight))
+# print_log(problem_params, items_weight, restrictions, end_time - start_time)
