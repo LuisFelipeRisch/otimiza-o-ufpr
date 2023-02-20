@@ -27,7 +27,7 @@ def print_log(problem_params:List[int], item_weights:List[int], restrictions:Lis
         sys.stderr.write(f'O item {item + 1} tem a massa de {item_weights[item]}\n')
 
     for restriction in restrictions:
-        sys.stderr.write(f'O item {restriction[0]} não pode viajar junto com o {restriction[1]}\n')
+        sys.stderr.write(f'O item {restriction[0] + 1} não pode viajar junto com o {restriction[1] + 1}\n')
 
     sys.stderr.write(f'O branch and bound levou {total_time_sec:0.4f} segundos para ser executado e a árvore gerada teve um total de {total_nodes} nodos\n')
 
@@ -162,5 +162,5 @@ end_time = time.perf_counter()
 print(best_trips_qnt)
 print(best_trips_arrangement)
 
-# print_result(len(items_weight))
-# print_log(problem_params, items_weight, restrictions, end_time - start_time)
+print_result(len(items_weight))
+print_log(problem_params, items_weight, restrictions, end_time - start_time)
