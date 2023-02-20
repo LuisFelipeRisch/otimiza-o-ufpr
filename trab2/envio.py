@@ -18,7 +18,7 @@ def print_result(n):
                 break
         if item != n - 1:
             sys.stdout.write(" ")
-    sys.stdout.write(f'\n{best_trips_qnt}')
+    sys.stdout.write(f'\n{best_trips_qnt}\n')
 
 def print_log(problem_params:List[int], item_weights:List[int], restrictions:List[int], total_time_sec:float):
     sys.stderr.write(f'n = {problem_params[0]}; p = {problem_params[1]}; c = {problem_params[2]}\n')
