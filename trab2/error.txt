@@ -1,13 +1,9 @@
-n = 10; p = 0; c = 100
-O item 1 tem a massa de 19
+n = 5; p = 2; c = 100
+O item 1 tem a massa de 10
 O item 2 tem a massa de 20
-O item 3 tem a massa de 22
-O item 4 tem a massa de 26
-O item 5 tem a massa de 26
-O item 6 tem a massa de 29
-O item 7 tem a massa de 33
-O item 8 tem a massa de 34
-O item 9 tem a massa de 41
-O item 10 tem a massa de 49
-O item 19 não pode viajar junto com o 20                                                        15171355
-O branch and bound levou 71.2591 segundos para ser executado e a árvore gerada teve um total de 17341007 nodos
+O item 3 tem a massa de 30
+O item 4 tem a massa de 40
+O item 5 tem a massa de 50
+O item 1 não pode viajar junto com o 2
+O item 2 não pode viajar junto com o 5
+O branch and bound levou 0.0007 segundos para ser executado e a árvore gerada teve um total de 32 nodos

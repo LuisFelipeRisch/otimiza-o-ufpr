@@ -11,14 +11,18 @@ best_trips_qnt = math.inf
 best_trips_arrangement = None
 
 def print_result(n):
-    for item in range(n):
-        for index, trip in enumerate(best_trips_arrangement):
-            if item in trip:
-                sys.stdout.write(f'{index + 1}')
-                break
-        if item != n - 1:
-            sys.stdout.write(" ")
-    sys.stdout.write(f'\n{best_trips_qnt}\n')
+    if best_trips_arrangement == None:
+        print(best_trips_arrangement)
+        print(best_trips_qnt)
+    else:
+        for item in range(n):
+            for index, trip in enumerate(best_trips_arrangement):
+                if item in trip:
+                    sys.stdout.write(f'{index + 1}')
+                    break
+            if item != n - 1:
+                sys.stdout.write(" ")
+        sys.stdout.write(f'\n{best_trips_qnt}\n')
 
 def print_log(problem_params:List[int], item_weights:List[int], restrictions:List[int], total_time_sec:float):
     sys.stderr.write(f'n = {problem_params[0]}; p = {problem_params[1]}; c = {problem_params[2]}\n')
@@ -158,9 +162,6 @@ for line in sys.stdin:
 start_time = time.perf_counter()
 bin_packing(items_weight, problem_params[2], [tuple(x) for x in restrictions], should_use_teachers_bound, should_turn_off_feasibility_cuts, should_turn_off_optimally_cuts)
 end_time = time.perf_counter()
-
-print(best_trips_qnt)
-print(best_trips_arrangement)
 
 print_result(len(items_weight))
 print_log(problem_params, items_weight, restrictions, end_time - start_time)
